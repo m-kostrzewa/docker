@@ -26,18 +26,30 @@ func TestFileSpecPlugin(t *testing.T) {
 	tmpdir, unregister := Setup(t)
 	defer unregister()
 
-	cases := []struct {
+	type testCase struct {
 		path string
 		name string
 		addr string
 		fail bool
-	}{
-		// TODO Windows: Factor out the unix:// variants.
-		{filepath.Join(tmpdir, "echo.spec"), "echo", "unix://var/lib/docker/plugins/echo.sock", false},
-		{filepath.Join(tmpdir, "echo", "echo.spec"), "echo", "unix://var/lib/docker/plugins/echo.sock", false},
+	}
+
+	commonTestCases := []testCase{
 		{filepath.Join(tmpdir, "foo.spec"), "foo", "tcp://localhost:8080", false},
 		{filepath.Join(tmpdir, "foo", "foo.spec"), "foo", "tcp://localhost:8080", false},
 		{filepath.Join(tmpdir, "bar.spec"), "bar", "localhost:8080", true}, // unknown transport
+	}
+
+	if runtime.GOOS == "windows" {
+		windowsTestCases := []testCase{
+			{filepath.Join(tmpdir, "win.spec"), "win", "npipe:////./pipe/testpipe", false},
+		}
+		commonTestCases = append(commonTestCases, windowsTestCases...)
+	} else {
+		unixTestCases := []testCase{
+			{filepath.Join(tmpdir, "echo.spec"), "echo", "unix://var/lib/docker/plugins/echo.sock", false},
+			{filepath.Join(tmpdir, "echo", "echo.spec"), "echo", "unix://var/lib/docker/plugins/echo.sock", false},
+		}
+		commonTestCases = append(commonTestCases, unixTestCases...)
 	}
 
 	for _, c := range cases {

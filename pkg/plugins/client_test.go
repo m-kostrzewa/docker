@@ -118,6 +118,7 @@ func TestClientScheme(t *testing.T) {
 		"unix:///usr/local/plugins/foo": "http",
 		"http://127.0.0.1:8080":         "http",
 		"https://127.0.0.1:8080":        "https",
+		"npipe:////./pipe/testpipe":     "http",
 	}
 
 	for addr, scheme := range cases {
